@@ -23,15 +23,7 @@ public class NetworkClient : IDisposable
             return;
         }
 
-        if(SceneManager.GetActiveScene().name != "Menu")
-        {
-            SceneManager.LoadScene(MenuSceneName);
-        }
-
-        if (m_NetworkManager.IsConnectedClient)
-        {
-            m_NetworkManager.Shutdown();
-        }
+        Disconnect();
     }
 
     public void Dispose()
@@ -39,6 +31,19 @@ public class NetworkClient : IDisposable
         if(m_NetworkManager != null)
         {
             this.m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnected;
+        }
+    }
+
+    public void Disconnect()
+    {
+        if (SceneManager.GetActiveScene().name != "Menu")
+        {
+            SceneManager.LoadScene(MenuSceneName);
+        }
+
+        if (m_NetworkManager.IsConnectedClient)
+        {
+            m_NetworkManager.Shutdown();
         }
     }
 }

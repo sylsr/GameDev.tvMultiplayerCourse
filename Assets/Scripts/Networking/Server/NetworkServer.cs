@@ -7,6 +7,7 @@ using static Unity.Netcode.NetworkManager;
 
 public class NetworkServer : IDisposable
 {
+    public Action<string> OnClientLeft;
 
     private NetworkManager m_NetworkManager;
     private Dictionary<ulong, string> m_PlayerIdAuthId;
@@ -32,6 +33,7 @@ public class NetworkServer : IDisposable
         {
             m_PlayerIdAuthId.Remove(obj);
             m_AuthIdUserData.Remove(authId);
+            OnClientLeft?.Invoke(authId);
         }
     }
 

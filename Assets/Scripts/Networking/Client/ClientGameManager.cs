@@ -64,4 +64,9 @@ public class ClientGameManager : IDisposable
     {
         networkClient?.Dispose();
     }
+
+    internal void Disconnect()
+    {
+        networkClient.Disconnect();
+    }
 }
