@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using static Unity.Netcode.NetworkManager;
 
@@ -22,6 +23,12 @@ public class NetworkServer : IDisposable
         m_AuthIdUserData = new Dictionary<string, UserData>();
     }
 
+    public bool OpenConnection(string ip, int port)
+    {
+        UnityTransport transport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
+        transport.SetConnectionData(ip, (ushort)port);
+        return m_NetworkManager.StartServer();
+    }
     private void OnNetworkReady()
     {
         this.m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;

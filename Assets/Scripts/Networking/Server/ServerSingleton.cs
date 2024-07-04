@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.Netcode;
+using Unity.Services.Core;
 using UnityEngine;
 
 public class ServerSingleton : MonoBehaviour
@@ -39,9 +42,10 @@ public class ServerSingleton : MonoBehaviour
         GameManager?.Dispose();
     }
 
-    public void CreateHost()
+    public async Task CreateServer()
     {
         Start();
-        GameManager = new ServerGameManager();
+        await UnityServices.InitializeAsync();
+        GameManager = new ServerGameManager(ApplicationData.IP(), ApplicationData.Port(), ApplicationData.QPort(), NetworkManager.Singleton);
     }
 }
