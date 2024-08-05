@@ -19,11 +19,21 @@ public class ClientGameManager : IDisposable
     private const string MenuSceneName = "Menu";
     private const string SceneName = "GameplayScene1";
     private NetworkClient networkClient;
+    private MatchplayMatchmaker matchmaker;
+
+    private UserData userData;
     public async Task<bool> InitAsync()
     {
         await UnityServices.InitializeAsync();
         networkClient = new NetworkClient(NetworkManager.Singleton);
+        matchmaker = new MatchplayMatchmaker();
         AuthState authState = await AuthenticationWrapper.DoAuth();
+
+        userData = new UserData
+        {
+            userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
+            userAuthId = AuthenticationService.Instance.PlayerId
+        };
 
         return authState == AuthState.Authenticated;
     }
@@ -41,16 +51,8 @@ public class ClientGameManager : IDisposable
             RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
             UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             transport.SetRelayServerData(relayServerData);
-            UserData userData = new UserData
-            {
-                userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
-                userAuthId = AuthenticationService.Instance.PlayerId
-            };
-            string payload = JsonUtility.ToJson(userData);
-            byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
 
-            NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes;
-            NetworkManager.Singleton.StartClient();
+            ConnectClient();
         }
         catch (Exception e)
         {
@@ -58,6 +60,44 @@ public class ClientGameManager : IDisposable
             return;
         }
 
+    }
+
+    private void StartClient(string ip, int port)
+    {
+        UnityTransport transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
+        transport.SetConnectionData(ip, (ushort)port);
+        ConnectClient();
+    }
+
+    private void ConnectClient()
+    {
+        string payload = JsonUtility.ToJson(userData);
+        byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
+
+        NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes;
+        NetworkManager.Singleton.StartClient();
+    }
+
+    public async void MatchmakeAsync(Action<MatchmakerPollingResult> onMatchmakeResponse)
+    {
+        if (matchmaker.IsMatchmaking)
+        {
+            return;
+        }
+
+        MatchmakerPollingResult result = await GetMatchAsync();
+        onMatchmakeResponse?.Invoke(result);
+    }
+
+    private async Task<MatchmakerPollingResult> GetMatchAsync()
+    {
+        MatchmakingResult result =  await matchmaker.Matchmake(userData);
+        if(result.result == MatchmakerPollingResult.Success)
+        {
+            StartClient(result.ip, result.port);
+        }
+
+        return result.result;
     }
 
     public void Dispose()
@@ -68,5 +108,10 @@ public class ClientGameManager : IDisposable
     internal void Disconnect()
     {
         networkClient.Disconnect();
+    }
+
+    public async Task CancelMatchmaking()
+    {
+        await matchmaker.CancelMatchmaking();
     }
 }
