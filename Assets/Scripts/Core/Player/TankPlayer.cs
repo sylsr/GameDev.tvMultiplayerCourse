@@ -14,6 +14,7 @@ public class TankPlayer : NetworkBehaviour
     [SerializeField] private int cameraPriority = 11;
     [SerializeField] private SpriteRenderer minimapIcon;
     [SerializeField] private Color minimapSelfColor = Color.blue;
+    [SerializeField] private Texture2D crosshair;
 
 
     public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>();
@@ -25,7 +26,16 @@ public class TankPlayer : NetworkBehaviour
     {
         if (IsServer)
         {
-            UserData userData = HostSingleton.Instance.GameManager.NetworkServer.GetUserData(OwnerClientId);
+            UserData userData = null;
+            if (IsHost)
+            {
+                 userData = HostSingleton.Instance.GameManager.NetworkServer.GetUserDataByClientId(OwnerClientId);
+            }
+            else
+            {
+                userData = ServerSingleton.Instance.GameManager.NetworkServer.GetUserDataByClientId(OwnerClientId);
+            }
+            
             PlayerName.Value = userData.userName;
             OnPlayerSpawned?.Invoke(this);
         }
@@ -33,6 +43,7 @@ public class TankPlayer : NetworkBehaviour
         {
             vCamera.Priority = cameraPriority;
             minimapIcon.color = minimapSelfColor;
+            Cursor.SetCursor(crosshair, new Vector2(crosshair.width / 2, crosshair.height / 2), CursorMode.Auto);
         }
     }
 

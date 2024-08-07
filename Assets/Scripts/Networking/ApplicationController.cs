@@ -12,6 +12,13 @@ public class ApplicationController : MonoBehaviour
     private HostSingleton hostPrefab;
     [SerializeField] private ServerSingleton serverPrefab;
 
+    private ApplicationData appData;
+
+    void Awake()
+    {
+        Debug.unityLogger.logHandler = new TimestampedLogHandler();
+    }
+
     async void Start()
     {
         DontDestroyOnLoad(this.gameObject);
@@ -22,6 +29,7 @@ public class ApplicationController : MonoBehaviour
     {
         if (isDedicatedServer)
         {
+            appData = new ApplicationData();
             ServerSingleton server = Instantiate(serverPrefab);
             await server.CreateServer();
             await server.GameManager.StartGameServerAsync();

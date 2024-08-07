@@ -23,7 +23,7 @@ public class ClientSingleton : MonoBehaviour
 
             if (instance == null)
             {
-                Debug.LogError("No client singleton found");
+                Debug.LogWarning("No client singleton found");
                 return null;
             }
 

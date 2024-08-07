@@ -37,6 +37,7 @@ public class MatchplayMatchmaker : IDisposable
         cancelToken = new CancellationTokenSource();
 
         string queueName = data.userGamePreferences.ToMultiplayQueue();
+        Debug.Log($"Creating ticket in queue: {queueName}");
         CreateTicketOptions createTicketOptions = new CreateTicketOptions(queueName);
         Debug.Log(createTicketOptions.QueueName);
 

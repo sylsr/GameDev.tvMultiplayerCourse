@@ -17,10 +17,12 @@ public class NameSelector : MonoBehaviour
     {
         if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
         {
+            Debug.Log("Running bootstrap as server...");
             LoadNextScene();
             return;
         }
         nameField.text = PlayerPrefs.GetString(PlayerNameKey, string.Empty);
+        Debug.Log($"Got playerpref name: {nameField.text}");
         HandleNameChange();
     }
 

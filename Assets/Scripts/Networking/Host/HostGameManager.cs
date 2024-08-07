@@ -78,7 +78,8 @@ public class HostGameManager : IDisposable
         try
         {
             await LobbyService.Instance.RemovePlayerAsync(lobby.Id, authId);
-        }catch(LobbyServiceException e)
+        }
+        catch (LobbyServiceException e)
         {
             Debug.Log(e);
         }
@@ -101,19 +102,23 @@ public class HostGameManager : IDisposable
 
     public async void Shutdown()
     {
-        HostSingleton.Instance.StopCoroutine(nameof(HeartbeatLobby));
-        if (lobby != null && !string.IsNullOrEmpty(lobby.Id))
+
+        if (lobby == null || string.IsNullOrEmpty(lobby.Id))
         {
-            try
-            {
-                await Lobbies.Instance.DeleteLobbyAsync(lobby.Id);
-            }
-            catch (LobbyServiceException e)
-            {
-                Debug.LogError(e);
-            }
-            lobby = null;
+            return;
         }
+
+        HostSingleton.Instance.StopCoroutine(nameof(HeartbeatLobby));
+        try
+        {
+            await Lobbies.Instance.DeleteLobbyAsync(lobby.Id);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError(e);
+        }
+        lobby = null;
+
         NetworkServer.OnClientLeft -= HandleClientLeft;
         NetworkServer?.Dispose();
     }

@@ -4,53 +4,44 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using static Unity.Netcode.NetworkManager;
 
 public class NetworkServer : IDisposable
 {
+    private NetworkManager networkManager;
+
+    public Action<UserData> OnUserJoined;
+    public Action<UserData> OnUserLeft;
+
     public Action<string> OnClientLeft;
 
-    private NetworkManager m_NetworkManager;
-    private Dictionary<ulong, string> m_PlayerIdAuthId;
-    private Dictionary<string, UserData> m_AuthIdUserData;
+    private Dictionary<ulong, string> clientIdToAuth = new Dictionary<ulong, string>();
+    private Dictionary<string, UserData> authIdToUserData = new Dictionary<string, UserData>();
+
     public NetworkServer(NetworkManager networkManager)
     {
-        this.m_NetworkManager = networkManager;
+        this.networkManager = networkManager;
 
-        this.m_NetworkManager.ConnectionApprovalCallback += ApprovalCheck;
-        this.m_NetworkManager.OnServerStarted += OnNetworkReady;
-        m_PlayerIdAuthId = new Dictionary<ulong, string>();
-        m_AuthIdUserData = new Dictionary<string, UserData>();
+        networkManager.ConnectionApprovalCallback += ApprovalCheck;
+        networkManager.OnServerStarted += OnNetworkReady;
     }
 
     public bool OpenConnection(string ip, int port)
     {
-        UnityTransport transport = m_NetworkManager.gameObject.GetComponent<UnityTransport>();
+        UnityTransport transport = networkManager.gameObject.GetComponent<UnityTransport>();
         transport.SetConnectionData(ip, (ushort)port);
-        return m_NetworkManager.StartServer();
-    }
-    private void OnNetworkReady()
-    {
-        this.m_NetworkManager.OnClientDisconnectCallback += OnClientDisconnect;
+        return networkManager.StartServer();
     }
 
-    private void OnClientDisconnect(ulong obj)
-    {
-        if(m_PlayerIdAuthId.TryGetValue(obj, out string authId))
-        {
-            m_PlayerIdAuthId.Remove(obj);
-            m_AuthIdUserData.Remove(authId);
-            OnClientLeft?.Invoke(authId);
-        }
-    }
-
-    private void ApprovalCheck(ConnectionApprovalRequest request, ConnectionApprovalResponse response)
+    private void ApprovalCheck(
+        NetworkManager.ConnectionApprovalRequest request,
+        NetworkManager.ConnectionApprovalResponse response)
     {
         string payload = System.Text.Encoding.UTF8.GetString(request.Payload);
         UserData userData = JsonUtility.FromJson<UserData>(payload);
 
-        m_PlayerIdAuthId[request.ClientNetworkId] = userData.userAuthId;
-        m_AuthIdUserData[userData.userAuthId] = userData;
+        clientIdToAuth[request.ClientNetworkId] = userData.userAuthId;
+        authIdToUserData[userData.userAuthId] = userData;
+        OnUserJoined?.Invoke(userData);
 
         response.Approved = true;
         response.Position = SpawnPoint.GetRandomSpawnPos();
@@ -58,30 +49,48 @@ public class NetworkServer : IDisposable
         response.CreatePlayerObject = true;
     }
 
-    public void Dispose()
+    private void OnNetworkReady()
     {
-        if (this.m_NetworkManager != null)
-        {
-            this.m_NetworkManager.ConnectionApprovalCallback -= ApprovalCheck;
-            this.m_NetworkManager.OnServerStarted -= OnNetworkReady;
-            this.m_NetworkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+        networkManager.OnClientDisconnectCallback += OnClientDisconnect;
+    }
 
-            if (this.m_NetworkManager.IsListening)
-            {
-                this.m_NetworkManager.Shutdown();
-            }
+    private void OnClientDisconnect(ulong clientId)
+    {
+        if (clientIdToAuth.TryGetValue(clientId, out string authId))
+        {
+            clientIdToAuth.Remove(clientId);
+            OnUserLeft?.Invoke(authIdToUserData[authId]);
+            authIdToUserData.Remove(authId);
+            OnClientLeft?.Invoke(authId);
         }
     }
 
-    public UserData GetUserData(ulong clientId)
+    public UserData GetUserDataByClientId(ulong clientId)
     {
-        if(m_PlayerIdAuthId.TryGetValue(clientId, out var authId))
+        if (clientIdToAuth.TryGetValue(clientId, out string authId))
         {
-            if(m_AuthIdUserData.TryGetValue(authId, out var userData))
+            if (authIdToUserData.TryGetValue(authId, out UserData data))
             {
-                return userData;
+                return data;
             }
+
+            return null;
         }
+
         return null;
+    }
+
+    public void Dispose()
+    {
+        if (networkManager == null) { return; }
+
+        networkManager.ConnectionApprovalCallback -= ApprovalCheck;
+        networkManager.OnClientDisconnectCallback -= OnClientDisconnect;
+        networkManager.OnServerStarted -= OnNetworkReady;
+
+        if (networkManager.IsListening)
+        {
+            networkManager.Shutdown();
+        }
     }
 }
