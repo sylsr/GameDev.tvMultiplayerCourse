@@ -82,19 +82,26 @@ public class ClientGameManager : IDisposable
     {
         if (matchmaker.IsMatchmaking)
         {
+            Debug.LogWarning("Already matchmaking.");
             return;
         }
 
         MatchmakerPollingResult result = await GetMatchAsync();
+        Debug.Log($"Matchmaking result: {result}");
         onMatchmakeResponse?.Invoke(result);
     }
 
     private async Task<MatchmakerPollingResult> GetMatchAsync()
     {
-        MatchmakingResult result =  await matchmaker.Matchmake(userData);
-        if(result.result == MatchmakerPollingResult.Success)
+        MatchmakingResult result = await matchmaker.Matchmake(userData);
+        if (result.result == MatchmakerPollingResult.Success)
         {
+            Debug.Log($"Match found. Server IP: {result.ip}, Port: {result.port}");
             StartClient(result.ip, result.port);
+        }
+        else
+        {
+            Debug.LogWarning($"Matchmaking failed: {result.result}");
         }
 
         return result.result;

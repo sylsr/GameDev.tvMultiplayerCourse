@@ -48,7 +48,16 @@ public class MatchplayBackfiller : IDisposable
 
         if (string.IsNullOrEmpty(localBackfillTicket.Id))
         {
-            localBackfillTicket.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(createBackfillOptions);
+            try
+            {
+                localBackfillTicket.Id = await MatchmakerService.Instance.CreateBackfillTicketAsync(createBackfillOptions);
+                Debug.Log($"Backfill ticket created with ID: {localBackfillTicket.Id}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error creating backfill ticket: {ex.Message}");
+                return;
+            }
         }
 
         IsBackfilling = true;
@@ -69,7 +78,6 @@ public class MatchplayBackfiller : IDisposable
             Debug.LogWarningFormat("User: {0} - {1} already in Match. Ignoring add.",
                 userData.userName,
                 userData.userAuthId);
-                
             return;
         }
 
@@ -78,7 +86,9 @@ public class MatchplayBackfiller : IDisposable
         MatchProperties.Players.Add(matchmakerPlayer);
         MatchProperties.Teams[0].PlayerIds.Add(matchmakerPlayer.Id);
         localDataDirty = true;
+        Debug.Log($"Player {userData.userAuthId} added to backfill ticket.");
     }
+
 
     public int RemovePlayerFromMatch(string userId)
     {
@@ -124,14 +134,25 @@ public class MatchplayBackfiller : IDisposable
     {
         while (IsBackfilling)
         {
-            if (localDataDirty)
+            try
             {
-                await MatchmakerService.Instance.UpdateBackfillTicketAsync(localBackfillTicket.Id, localBackfillTicket);
-                localDataDirty = false;
+                if (localDataDirty)
+                {
+                    await MatchmakerService.Instance.UpdateBackfillTicketAsync(localBackfillTicket.Id, localBackfillTicket);
+                    localDataDirty = false;
+                    Debug.Log("Backfill ticket updated.");
+                }
+                else
+                {
+                    localBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(localBackfillTicket.Id);
+                    Debug.Log("Backfill ticket approved.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                localBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(localBackfillTicket.Id);
+                Debug.LogError($"Error in backfill loop: {ex.Message}");
+                IsBackfilling = false;
+                break;
             }
 
             if (!NeedsPlayers())
@@ -143,6 +164,7 @@ public class MatchplayBackfiller : IDisposable
             await Task.Delay(TicketCheckMs);
         }
     }
+
 
     public void Dispose()
     {
