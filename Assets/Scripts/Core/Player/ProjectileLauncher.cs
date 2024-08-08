@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
 
 public class ProjectileLauncher : NetworkBehaviour
@@ -44,6 +45,7 @@ public class ProjectileLauncher : NetworkBehaviour
     private float previousFireTime;
 
     private float muzzleFlashTimer;
+    private bool isPointerOnUI = false;
 
     public override void OnNetworkSpawn()
     {
@@ -73,12 +75,17 @@ public class ProjectileLauncher : NetworkBehaviour
         {
             muzzleFlash.SetActive(false);
         }
-        if ((!IsOwner || !shouldFire))
+        if (!IsOwner)
+        {
+            return;
+        }
+        isPointerOnUI = EventSystem.current.IsPointerOverGameObject();
+        if(Time.time - previousFireTime < fireRate)
         {
             return;
         }
 
-        if(Time.time - previousFireTime < fireRate)
+        if (!shouldFire)
         {
             return;
         }
@@ -143,6 +150,10 @@ public class ProjectileLauncher : NetworkBehaviour
 
     private void HandlePrimaryFire(bool shouldFire)
     {
+        if (shouldFire && isPointerOnUI)
+        {
+            return;
+        }
         this.shouldFire = shouldFire;
     }
 }

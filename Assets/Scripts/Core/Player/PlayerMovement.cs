@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class PlayerMovement : NetworkBehaviour
 {
+    
     [Header("References")]
     [SerializeField]
     private InputReader inputReader;
@@ -14,6 +15,9 @@ public class PlayerMovement : NetworkBehaviour
 
     [SerializeField]
     private Rigidbody2D rb;
+
+    [SerializeField]
+    private ParticleSystem dustCloud;
 
 
     [Header("Settings")]
@@ -26,9 +30,18 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField]
     private float acceleration = 4f;
 
+    [SerializeField]
+    private float particleEmmissionValue = 10f;
+
+    private ParticleSystem.EmissionModule emissionModule;
+
     private Vector2 previousMovementInput = new();
 
+    private Vector3 prevPos;
+
     private float currentMovementSpeed = 0f;
+
+    private const float ParticleStopThreshold = 0.005f;
 
     public override void OnNetworkSpawn()
     {
@@ -48,6 +61,11 @@ public class PlayerMovement : NetworkBehaviour
         inputReader.MovementEvent -= HandleMove;
     }
 
+    private void Awake()
+    {
+        emissionModule = dustCloud.emission;
+    }
+
     void Update()
     {
         if (!IsOwner)
@@ -59,6 +77,15 @@ public class PlayerMovement : NetworkBehaviour
 
     private void FixedUpdate()
     {
+        if ((this.transform.position - prevPos).sqrMagnitude > ParticleStopThreshold)
+        {
+            emissionModule.rateOverTime = particleEmmissionValue;
+        }
+        else
+        {
+            emissionModule.rateOverTime = 0;
+        }
+        prevPos = this.transform.position;
         if (!IsOwner)
         {
             return;

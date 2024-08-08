@@ -69,6 +69,10 @@ public class Leaderboard : NetworkBehaviour
 
     private void HandleLeaderboardEntitiesChanges(NetworkListEvent<LeaderboardEntityState> changeEvent)
     {
+        if (!gameObject.scene.isLoaded)
+        {
+            return;
+        }
         //Update on value changes, player joins, player leaves.
         switch (changeEvent.Type)
         {

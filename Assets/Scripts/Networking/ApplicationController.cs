@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ApplicationController : MonoBehaviour
 {
@@ -13,6 +14,8 @@ public class ApplicationController : MonoBehaviour
     [SerializeField] private ServerSingleton serverPrefab;
 
     private ApplicationData appData;
+
+    private const string GameSceneName = "GameplayScene1";
 
     void Awake()
     {
@@ -29,10 +32,10 @@ public class ApplicationController : MonoBehaviour
     {
         if (isDedicatedServer)
         {
+            Application.targetFrameRate = 60;
             appData = new ApplicationData();
             ServerSingleton server = Instantiate(serverPrefab);
-            await server.CreateServer();
-            await server.GameManager.StartGameServerAsync();
+            StartCoroutine(LoadGameSceneAsync(server));
         }
         else
         {
@@ -48,5 +51,21 @@ public class ApplicationController : MonoBehaviour
                 clientSingleton.GameManager.GoToMainMenu();
             }
         }
+    }
+
+    private IEnumerator LoadGameSceneAsync(ServerSingleton server)
+    {
+        AsyncOperation sc = SceneManager.LoadSceneAsync(GameSceneName);
+
+        while (!sc.isDone)
+        {
+            yield return null;
+        }
+
+        Task createServerTask = server.CreateServer();
+        yield return new WaitUntil(() => createServerTask.IsCompleted);
+        Task startServerTask = server.GameManager.StartGameServerAsync();
+
+        yield return new WaitUntil(() => startServerTask.IsCompleted);
     }
 }

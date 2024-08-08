@@ -25,7 +25,7 @@ public class ServerGameManager : IDisposable
 
     public NetworkServer NetworkServer { get; private set; }
 
-    private const string GameSceneName = "GameplayScene1";
+    
 
     public ServerGameManager(string serverIP, int serverPort, int queryPort, NetworkManager manager)
     {
@@ -65,8 +65,6 @@ public class ServerGameManager : IDisposable
             Debug.LogWarning("NetworkServer did not start as expected.");
             return;
         }
-
-        NetworkManager.Singleton.SceneManager.LoadScene(GameSceneName, LoadSceneMode.Single);
     }
 
     private async Task<MatchmakingResults> GetMatchmakerPayload()
