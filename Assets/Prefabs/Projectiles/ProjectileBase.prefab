@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8263825252300669201}
   - component: {fileID: 3450556696080287068}
   - component: {fileID: 6784044694936889900}
+  - component: {fileID: 6738467998923826686}
   m_Layer: 6
   m_Name: ProjectileBase
   m_TagString: Untagged
@@ -87,6 +88,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5769cbe83780bd542926c4ce7ddbe74b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  projectile: {fileID: 6738467998923826686}
 --- !u!70 &6784044694936889900
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -122,3 +124,15 @@ CapsuleCollider2D:
   m_Offset: {x: 0, y: 0}
   m_Size: {x: 0.5, y: 0.7}
   m_Direction: 0
+--- !u!114 &6738467998923826686
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52993475728684682}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0647ea0b987ded041a41c76655a5e62b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

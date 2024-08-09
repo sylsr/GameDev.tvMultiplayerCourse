@@ -25,7 +25,7 @@ public class HostGameManager : IDisposable
     private const int WaitTimeSeconds = 15;
     public NetworkServer NetworkServer { get; private set; }
 
-    public async Task StartHostAsync()
+    public async Task StartHostAsync(bool privateLobby)
     {
         try
         {
@@ -37,7 +37,7 @@ public class HostGameManager : IDisposable
             transport.SetRelayServerData(relayServerData);
 
             CreateLobbyOptions options = new CreateLobbyOptions();
-            options.IsPrivate = false;
+            options.IsPrivate = privateLobby;
             options.Data = new Dictionary<string, DataObject>()
             {
                 {"joinCode", new DataObject(DataObject.VisibilityOptions.Member, joinCode) },

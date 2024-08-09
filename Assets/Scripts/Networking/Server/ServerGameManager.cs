@@ -23,6 +23,8 @@ public class ServerGameManager : IDisposable
     private MatchplayBackfiller backfiller;
     private MultiplayAllocationService multiplayAllocationService;
 
+    private Dictionary<string, int> teamToTeamId = new Dictionary<string, int>();
+
     public NetworkServer NetworkServer { get; private set; }
 
     
@@ -95,7 +97,17 @@ public class ServerGameManager : IDisposable
 
     private void UserJoined(UserData user)
     {
-        backfiller.AddPlayerToMatch(user);
+        Team team = backfiller.GetTeamByUserId(user.userAuthId);
+        Debug.Log($"User with userID: {user.userAuthId} (user name = {user.userName}) is joining team: {team.TeamId}");
+        if(!teamToTeamId.TryGetValue(team.TeamId, out int teamNum))
+        {
+            Debug.Log("Adding new entry to team dict.");
+            teamNum = teamToTeamId.Count;
+            teamToTeamId.Add(team.TeamId, teamNum);
+        }
+
+        user.teamNumber = teamNum;
+
         multiplayAllocationService.AddPlayer();
         if (!backfiller.NeedsPlayers() && backfiller.IsBackfilling)
         {

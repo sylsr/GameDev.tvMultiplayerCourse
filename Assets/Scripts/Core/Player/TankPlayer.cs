@@ -14,10 +14,13 @@ public class TankPlayer : NetworkBehaviour
     [SerializeField] private int cameraPriority = 11;
     [SerializeField] private SpriteRenderer minimapIcon;
     [SerializeField] private Color minimapSelfColor = Color.blue;
+    
     [SerializeField] private Texture2D crosshair;
 
 
     public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>();
+
+    public NetworkVariable<int> TeamNumber = new NetworkVariable<int>();
 
     public static event Action<TankPlayer> OnPlayerSpawned;
     public static event Action<TankPlayer> OnPlayerDespawned;
@@ -37,6 +40,7 @@ public class TankPlayer : NetworkBehaviour
             }
             
             PlayerName.Value = userData.userName;
+            TeamNumber.Value = userData.teamNumber;
             OnPlayerSpawned?.Invoke(this);
         }
         if (IsOwner)

@@ -253,6 +253,7 @@ GameObject:
   - component: {fileID: 5539268380491193838}
   - component: {fileID: 1608978982041914953}
   - component: {fileID: 8286608684509919114}
+  - component: {fileID: 8620682769183353122}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -398,6 +399,7 @@ MonoBehaviour:
   inputReader: {fileID: 11400000, guid: 758635326ee7c44418240247995af15b, type: 2}
   muzzleFlash: {fileID: 7355440145408492364}
   playerCollider: {fileID: 98677353296715892}
+  player: {fileID: 8286608684509919114}
   projectileSpeed: 5
   fireRate: 0.75
   muzzleFlashDuration: 0.075
@@ -494,6 +496,25 @@ MonoBehaviour:
         byte0027: 0
         byte0028: 0
         byte0029: 0
+  TeamNumber:
+    m_InternalValue: 0
+--- !u!114 &8620682769183353122
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 978100411433830919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f51334aed2e0fc4fad0a7f90af503df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 8286608684509919114}
+  playerColorSprites:
+  - {fileID: 4715440779965256840}
+  - {fileID: 4808492578973803300}
+  teamColorLookup: {fileID: 11400000, guid: 82058d8c6a9ea664f9c34a76e02a23a7, type: 2}
 --- !u!1 &1792377093634708355
 GameObject:
   m_ObjectHideFlags: 0

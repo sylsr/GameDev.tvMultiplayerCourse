@@ -27,6 +27,9 @@ public class ProjectileLauncher : NetworkBehaviour
     [SerializeField]
     private Collider2D playerCollider;
 
+    [SerializeField]
+    private TankPlayer player;
+
     [Header("Settings")]
     [SerializeField]
     private float projectileSpeed = 2f;
@@ -95,14 +98,18 @@ public class ProjectileLauncher : NetworkBehaviour
             return; 
         }
         PrimaryFireServerRpc(projectileSpawnPoint.position, projectileSpawnPoint.up);
-        SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up);
+        SpawnDummyProjectile(projectileSpawnPoint.position, projectileSpawnPoint.up, player.TeamNumber.Value);
         previousFireTime = Time.time;
     }
 
-    private void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction)
+    private void SpawnDummyProjectile(Vector3 spawnPos, Vector3 direction, int teamNumber)
     {
         muzzleFlash.SetActive(true);
         muzzleFlashTimer = muzzleFlashDuration;
+        if (this.TryGetComponent<Projectile>(out Projectile projectile))
+        {
+            projectile.Initialize(teamNumber);
+        }
         SpawnProjectile(clientProjectilePrefab, spawnPos, direction);
     }
 
@@ -113,18 +120,24 @@ public class ProjectileLauncher : NetworkBehaviour
         {
             coinWallet.SpendCoins(costToFire);
         }
+
+        if (this.TryGetComponent<Projectile>(out Projectile projectile))
+        {
+            projectile.Initialize(player.TeamNumber.Value);
+        }
+
         SpawnProjectile(serverProjectilePrefab, spawnPos, direction);
-        SpawnDummyProjectileClientRpc(spawnPos, direction);
+        SpawnDummyProjectileClientRpc(spawnPos, direction, player.TeamNumber.Value);
     }
 
     [ClientRpc]
-    private void SpawnDummyProjectileClientRpc(Vector3 spawnPos, Vector3 direction)
+    private void SpawnDummyProjectileClientRpc(Vector3 spawnPos, Vector3 direction, int teamIndex)
     {
         if (IsOwner)
         {
             return;
         }
-        SpawnDummyProjectile(spawnPos, direction);
+        SpawnDummyProjectile(spawnPos, direction, teamIndex);
     }
 
     private bool EnoughCoinsToFire()

@@ -9,6 +9,7 @@ public class PlayerNameDisplay : MonoBehaviour
 {
     [SerializeField] private TankPlayer player;
     [SerializeField] private TMP_Text displayNameText;
+    
     private void Start()
     {
         HandlePlayerNameChanged(String.Empty, player.PlayerName.Value);
