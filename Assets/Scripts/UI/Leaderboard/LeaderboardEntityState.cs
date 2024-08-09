@@ -11,10 +11,11 @@ public struct LeaderboardEntityState : INetworkSerializable, IEquatable<Leaderbo
     public ulong ClientId;
     public FixedString32Bytes PlayerName;
     public int Coins;
+    public int TeamIndex;
 
     public bool Equals(LeaderboardEntityState other)
     {
-        return ClientId == other.ClientId && PlayerName.Equals(other.PlayerName) && Coins == other.Coins;
+        return ClientId == other.ClientId && PlayerName.Equals(other.PlayerName) && Coins == other.Coins && TeamIndex.Equals(other.TeamIndex);
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -22,6 +23,7 @@ public struct LeaderboardEntityState : INetworkSerializable, IEquatable<Leaderbo
         serializer.SerializeValue(ref ClientId);
         serializer.SerializeValue(ref PlayerName);
         serializer.SerializeValue(ref Coins);
+        serializer.SerializeValue(ref TeamIndex);
     }
 }
 

@@ -21,7 +21,7 @@ public class ClientGameManager : IDisposable
     private NetworkClient networkClient;
     private MatchplayMatchmaker matchmaker;
 
-    private UserData userData;
+    public UserData UserData { get; private set; }
     public async Task<bool> InitAsync()
     {
         await UnityServices.InitializeAsync();
@@ -29,7 +29,7 @@ public class ClientGameManager : IDisposable
         matchmaker = new MatchplayMatchmaker();
         AuthState authState = await AuthenticationWrapper.DoAuth();
 
-        userData = new UserData
+        UserData = new UserData
         {
             userName = PlayerPrefs.GetString(NameSelector.PlayerNameKey, "Missing Name"),
             userAuthId = AuthenticationService.Instance.PlayerId
@@ -71,7 +71,7 @@ public class ClientGameManager : IDisposable
 
     private void ConnectClient()
     {
-        string payload = JsonUtility.ToJson(userData);
+        string payload = JsonUtility.ToJson(UserData);
         byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
 
         NetworkManager.Singleton.NetworkConfig.ConnectionData = payloadBytes;
@@ -86,7 +86,7 @@ public class ClientGameManager : IDisposable
             return;
         }
 
-        userData.userGamePreferences.gameQueue = isTeamQueue ? GameQueue.Team : GameQueue.Solo;
+        UserData.userGamePreferences.gameQueue = isTeamQueue ? GameQueue.Team : GameQueue.Solo;
         MatchmakerPollingResult result = await GetMatchAsync();
         Debug.Log($"Matchmaking result: {result}");
         onMatchmakeResponse?.Invoke(result);
@@ -94,7 +94,7 @@ public class ClientGameManager : IDisposable
 
     private async Task<MatchmakerPollingResult> GetMatchAsync()
     {
-        MatchmakingResult result = await matchmaker.Matchmake(userData);
+        MatchmakingResult result = await matchmaker.Matchmake(UserData);
         if (result.result == MatchmakerPollingResult.Success)
         {
             Debug.Log($"Match found. Server IP: {result.ip}, Port: {result.port}");

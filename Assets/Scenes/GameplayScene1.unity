@@ -4535,6 +4535,10 @@ PrefabInstance:
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 417068446
       objectReference: {fileID: 0}
+    - target: {fileID: 4014269378284771441, guid: 239089e369c8b8c47a4ffeb0a999676b, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7350006445636210005, guid: 239089e369c8b8c47a4ffeb0a999676b, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
